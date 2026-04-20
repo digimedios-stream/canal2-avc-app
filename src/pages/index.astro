@@ -1,11 +1,63 @@
 ---
-import Welcome from '../components/Welcome.astro';
+// src/pages/index.astro
 import Layout from '../layouts/Layout.astro';
-
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+import VideoPlayer from '../components/VideoPlayer.jsx';
+import RadioPlayer from '../components/RadioPlayer.jsx';
+import SocialButtons from '../components/SocialButtons.jsx';
 ---
 
-<Layout>
-	<Welcome />
+<Layout title="Canal 2 AVC TV + FM">
+  <main class="max-w-7xl mx-auto px-4 py-6 md:py-10">
+    <!-- Header con Logo y Botones -->
+    <header class="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
+      <div class="flex items-center gap-3">
+        <!-- Logo cuadrado del canal (3.png) -->
+        <img 
+          src="/3.png" 
+          alt="Canal 2 AVC" 
+          class="w-16 h-16 object-contain rounded-lg shadow-lg shadow-red-900/30 bg-black/50 p-1"
+          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"
+        />
+        <!-- Fallback por si la imagen no carga -->
+        <div class="w-16 h-16 bg-red-600 rounded-lg hidden items-center justify-center font-black text-3xl shadow-red-500/30 shadow-lg">
+          2
+        </div>
+        <!-- Logo rectangular del canal (2 banner.png) -->
+        <img 
+          src="/2 banner.png" 
+          alt="Canal 2 AVC Banner" 
+          class="h-12 md:h-16 object-contain"
+          onerror="this.style.display='none'"
+        />
+      </div>
+      <SocialButtons client:load />
+    </header>
+
+    <!-- Sección TV (Principal) -->
+    <section class="mb-12">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="text-2xl">📺</span>
+        <h2 class="text-xl font-bold uppercase tracking-wider text-gray-300">Televisión en Vivo</h2>
+        <div class="h-px flex-1 bg-gradient-to-r from-red-600/50 to-transparent"></div>
+      </div>
+      <VideoPlayer client:load />
+      <p class="text-gray-500 text-sm mt-2 text-center">Streaming HLS • Señal BozzTV</p>
+    </section>
+
+    <!-- Sección Radio (Secundaria) -->
+    <section class="mb-12">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="text-2xl">📻</span>
+        <h2 class="text-xl font-bold uppercase tracking-wider text-gray-300">Radio FM</h2>
+        <div class="h-px flex-1 bg-gradient-to-r from-red-600/50 to-transparent"></div>
+      </div>
+      <RadioPlayer client:load />
+    </section>
+
+    <!-- Footer -->
+    <footer class="text-center text-gray-600 text-sm border-t border-gray-800 pt-8 mt-8">
+      <p>© {new Date().getFullYear()} Canal 2 AVC. Todos los derechos reservados.</p>
+      <p class="mt-1">Desarrollado con ♥ para Monte Caseros</p>
+    </footer>
+  </main>
 </Layout>

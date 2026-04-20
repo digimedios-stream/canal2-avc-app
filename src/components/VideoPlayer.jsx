@@ -13,7 +13,7 @@ const VideoPlayer = () => {
 
     const setupPlayer = () => {
       player = new Plyr(video, {
-        controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'],
+        controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'airplay', 'fullscreen'],
         settings: ['quality', 'speed'],
         autoplay: true,
         muted: true, // Muteado para permitir autoplay segun politicas del navegador
@@ -63,6 +63,7 @@ const VideoPlayer = () => {
         className="w-full aspect-video"
         controls={false} // Plyr maneja los controles
         playsInline
+        x-webkit-airplay="allow"
       />
       <div className="absolute top-4 left-4 z-10 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
         🔴 EN VIVO

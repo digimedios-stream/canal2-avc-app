@@ -28,7 +28,7 @@ const RadioPlayer = () => {
         {/* Logo de la radio FM */}
         <div className="w-16 h-16 rounded-full bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center shadow-lg shadow-red-900/30 overflow-hidden">
           <img 
-            src="/FM radio 2.png" 
+            src={`${import.meta.env.BASE_URL}FM radio 2.png`} 
             alt="FM Radio 2" 
             className="w-full h-full object-cover"
             onerror="this.style.display='none'"

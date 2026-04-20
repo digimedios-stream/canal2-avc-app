@@ -9,7 +9,7 @@ const SocialButtons = () => {
         className="bg-[#1877F2] hover:bg-[#0e5ab3] p-3 rounded-xl flex items-center gap-2 transition-all hover:scale-105 shadow-lg shadow-blue-900/30"
       >
         <img 
-          src="/face 225.fw.png" 
+          src={`${import.meta.env.BASE_URL}face 225.fw.png`} 
           alt="Facebook" 
           className="w-6 h-6 object-contain"
           onerror="this.style.display='none'"
@@ -27,7 +27,7 @@ const SocialButtons = () => {
         className="bg-[#FF0000] hover:bg-[#cc0000] p-3 rounded-xl flex items-center gap-2 transition-all hover:scale-105 shadow-lg shadow-red-900/30"
       >
         <img 
-          src="/hd-youtube-logo.png" 
+          src={`${import.meta.env.BASE_URL}hd-youtube-logo.png`} 
           alt="YouTube" 
           className="w-6 h-6 object-contain"
           onerror="this.style.display='none'"

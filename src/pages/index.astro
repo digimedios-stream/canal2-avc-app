@@ -24,10 +24,23 @@ import SocialButtons from '../components/SocialButtons.jsx';
 
     <!-- Sección TV (Principal) -->
     <section class="mb-12">
-      <div class="flex items-center gap-2 mb-4">
-        <span class="text-2xl">📺</span>
-        <h2 class="text-xl font-bold uppercase tracking-wider text-gray-300">Televisión en Vivo</h2>
-        <div class="h-px flex-1 bg-gradient-to-r from-red-600/50 to-transparent"></div>
+      <div class="flex items-center justify-between gap-4 mb-4">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl">📺</span>
+          <h2 class="text-xl font-bold uppercase tracking-wider text-gray-300">Televisión en Vivo</h2>
+          <div class="h-px w-12 bg-gradient-to-r from-red-600/50 to-transparent"></div>
+        </div>
+        <a 
+          href="https://wa.me/5493775496131" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          class="flex items-center gap-2 bg-[#25D366] hover:bg-[#1ebd5e] text-white text-xs font-bold px-3 py-1.5 rounded-full transition-all hover:scale-105 shadow-lg shadow-green-900/20"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.246 2.248 3.484 5.237 3.483 8.42-.003 6.557-5.338 11.892-11.893 11.892-1.997-.001-3.951-.499-5.688-1.447l-6.308 1.647zm6.357-3.912c1.533.908 3.391 1.446 5.488 1.446 5.454 0 9.893-4.438 9.893-9.892 0-2.652-1.031-5.145-2.901-7.016-1.871-1.871-4.365-2.903-7.01-2.903-5.454 0-9.891 4.438-9.891 9.892 0 2.13.633 4.145 1.83 5.867l-1.101 4.02 4.125-1.077zm11.376-7.234c-.313-.156-1.85-.912-2.138-1.016-.288-.104-.499-.156-.708.156-.21.312-.81 1.016-.991 1.225-.182.208-.364.234-.677.078-.313-.156-1.32-.486-2.515-1.553-.929-.828-1.556-1.852-1.738-2.164-.182-.312-.019-.481.137-.636.141-.14.313-.365.469-.547.156-.182.208-.312.313-.52.104-.208.052-.39-.026-.547-.078-.156-.708-1.705-.97-2.33-.255-.611-.514-.528-.708-.538-.182-.01-.39-.011-.599-.011-.208 0-.547.078-.832.39-.286.312-1.093 1.066-1.093 2.6s1.119 3.016 1.275 3.224c.156.208 2.193 3.344 5.312 4.692.742.321 1.321.513 1.771.656.745.237 1.423.204 1.958.124.597-.089 1.85-.756 2.112-1.446.262-.69.262-1.281.185-1.406-.078-.125-.288-.198-.602-.353z" />
+          </svg>
+          WhatsApp Canal
+        </a>
       </div>
       <VideoPlayer client:only="react" />
       <p class="text-center text-gray-500 text-xs mt-2">Streaming AVC HD Monte Caseros</p>

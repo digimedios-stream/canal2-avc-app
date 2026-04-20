@@ -1,116 +1,101 @@
 // src/components/VideoPlayer.jsx
 import { useEffect, useRef } from 'react';
-import videojs from 'video.js';
-import 'video.js/dist/video-js.css';
+import shaka from 'shaka-player/dist/shaka-player.compiled.js';
 
 const VideoPlayer = () => {
   const videoRef = useRef(null);
-  const playerRef = useRef(null);
   const videoSrc = "https://giatv.bozztv.com/giatv/giatv-digimediosstreamavc/digimediosstreamavc/playlist.m3u8";
 
   useEffect(() => {
-    // Asegurarse de que el elemento existe
-    if (!videoRef.current) return;
+    // Instalar pollyfills para compatibilidad maxima
+    shaka.polyfill.installAll();
 
-    // Configuración de Video.js
-    const videoJsOptions = {
-      autoplay: true,
-      controls: true,
-      responsive: true,
-      fluid: true,
-      muted: true, // Necesario para autoplay
-      preload: 'auto',
-      sources: [{
-        src: videoSrc,
-        type: 'application/x-mpegURL'
-      }],
-      liveui: true, // Interfaz específica para en vivo
-      html5: {
-        vhs: {
-          overrideNative: true, // Usar nuestro motor de HLS en vez del nativo para mas control
-          fastQualityChange: true,
+    if (!shaka.Player.isBrowserSupported()) {
+      console.error('Shaka Player no es soportado en este navegador');
+      return;
+    }
+
+    const initPlayer = async () => {
+      const video = videoRef.current;
+      const player = new shaka.Player(video);
+
+      // Configuración de robustez (Buffer agresivo)
+      player.configure({
+        streaming: {
+          bufferingGoal: 20, // 20 segundos de buffer acumulado
+          rebufferingGoal: 2,
+          bufferBehind: 10,
+          retryParameters: {
+            maxAttempts: 5,
+            baseDelay: 1000,
+            backoffFactor: 2,
+          },
+          // Ignorar errores de texto/subtitulos para que no corten el video
+          ignoreTextStreamFailures: true,
         },
-        nativeAudioTracks: false,
-        nativeVideoTracks: false
-      },
-      controlBar: {
-        children: [
-          'playToggle',
-          'volumePanel',
-          'progressControl',
-          'liveDisplay',
-          'remainingTimeDisplay',
-          'fullscreenToggle',
-        ],
-      },
+        manifest: {
+          retryParameters: {
+            maxAttempts: 5,
+          }
+        }
+      });
+
+      // Escuchar errores
+      player.addEventListener('error', (event) => {
+        console.error('Error en Shaka Player:', event.detail);
+        // Intentar recuperar si es un error critico
+        if (event.detail.severity === 2) {
+          player.load(videoSrc).catch(e => console.error('Error al reintentar:', e));
+        }
+      });
+
+      try {
+        await player.load(videoSrc);
+        console.log('Shaka Player cargado exitosamente');
+        video.play().catch(e => {
+          console.log('Autoplay bloqueado, esperando interacción');
+        });
+      } catch (e) {
+        console.error('Error al cargar la fuente en Shaka:', e);
+      }
+
+      return player;
     };
 
-    // Inicializar el reproductor
-    const player = playerRef.current = videojs(videoRef.current, videoJsOptions, () => {
-      console.log('Video.js Player listo');
+    let currentPlayer;
+    initPlayer().then(player => {
+      currentPlayer = player;
     });
 
-    // Lógica de recuperación de errores (muy importante para evitar cortes de 17s)
-    player.on('error', () => {
-      const error = player.error();
-      console.warn('Error detectado en Video.js, intentando recuperar...', error);
-      
-      // Esperar un segundo y reintentar la carga de la fuente
-      setTimeout(() => {
-        player.src({ src: videoSrc, type: 'application/x-mpegURL' });
-        player.load();
-        player.play().catch(e => console.log('Error al reanudar:', e));
-      }, 2000);
-    });
-
-    // Limpieza al desmontar
     return () => {
-      if (player && !player.isDisposed()) {
-        player.dispose();
-        playerRef.current = null;
+      if (currentPlayer) {
+        currentPlayer.destroy();
       }
     };
   }, []);
 
   return (
-    <div className="w-full relative bg-black rounded-xl overflow-hidden shadow-2xl shadow-red-900/20 border border-gray-800 video-js-container">
-      <div data-vjs-player>
-        <video
-          ref={videoRef}
-          className="video-js vjs-big-play-centered vjs-theme-city"
-          playsInline
-        />
-      </div>
+    <div className="w-full relative bg-black rounded-xl overflow-hidden shadow-2xl shadow-red-900/20 border border-gray-800">
+      <video
+        ref={videoRef}
+        className="w-full aspect-video outline-none"
+        poster={`${import.meta.env.BASE_URL}3.png`}
+        controls
+        playsInline
+        muted
+        autoPlay
+      />
       <div className="absolute top-4 left-4 z-10 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg pointer-events-none">
         🔴 EN VIVO
       </div>
-
+      
       <style>{`
-        /* Estilos personalizados para que Video.js combine con la App */
-        .video-js {
-          background-color: #000;
-          font-family: 'Inter', sans-serif;
+        /* Personalización de los controles nativos para que se vean mejor */
+        video::-webkit-media-controls-panel {
+          background-image: linear-gradient(transparent, rgba(0,0,0,0.8)) !important;
         }
-        .vjs-control-bar {
-          background-color: rgba(0, 0, 0, 0.7) !important;
-          backdrop-filter: blur(5px);
-        }
-        .vjs-play-progress, .vjs-volume-level {
-          background-color: #ef4444 !important; /* Rojo Tailwind 500 */
-        }
-        .vjs-big-play-button {
-          background-color: rgba(239, 68, 68, 0.8) !important;
-          border-color: #ef4444 !important;
-          border-radius: 50% !important;
-          width: 2em !important;
-          height: 2em !important;
-          line-height: 2em !important;
-          margin-top: -1em !important;
-          margin-left: -1em !important;
-        }
-        .vjs-live-display {
-          font-weight: bold;
-          text-transform: uppercase;
+        video.vjs-waiting {
+          filter: grayscale(1) blur(2px);
         }
       `}</style>
     </div>

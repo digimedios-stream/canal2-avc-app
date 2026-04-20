@@ -21,6 +21,7 @@
     "plyr": "^3.8.4",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
+    "shaka-player": "^5.1.1",
     "tailwindcss": "^4.2.2",
     "video.js": "^8.23.7"
   }

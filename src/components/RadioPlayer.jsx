@@ -54,7 +54,20 @@ const RadioPlayer = () => {
         </button>
         
         <div className="flex-1">
-          <h3 className="text-white font-bold text-lg">FM RADIO 2</h3>
+          <div className="flex items-center gap-3">
+            <h3 className="text-white font-bold text-lg">FM RADIO 2</h3>
+            {/* Ecualizador Animado */}
+            <div className="flex items-end gap-[2px] h-4 mb-1">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div
+                  key={i}
+                  className={`w-[3px] bg-red-500 rounded-full transition-all duration-300 ${
+                    isPlaying ? `animate-eq bar-${i}` : 'h-[3px]'
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
           <p className="text-gray-400 text-sm">Monte Caseros • Señal en Vivo</p>
           <div className="flex items-center gap-2 mt-2">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -73,6 +86,22 @@ const RadioPlayer = () => {
         </div>
       </div>
       <audio ref={audioRef} src={audioSrc} preload="none" />
+      
+      <style>{`
+        @keyframes eq {
+          0% { height: 3px; }
+          50% { height: 16px; }
+          100% { height: 3px; }
+        }
+        .animate-eq {
+          animation: eq 0.8s infinite ease-in-out;
+        }
+        .bar-1 { animation-delay: 0.1s; }
+        .bar-2 { animation-delay: 0.3s; }
+        .bar-3 { animation-delay: 0.2s; }
+        .bar-4 { animation-delay: 0.4s; }
+        .bar-5 { animation-delay: 0.1s; }
+      `}</style>
     </div>
   );
 };

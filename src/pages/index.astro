@@ -11,17 +11,6 @@ import SocialButtons from '../components/SocialButtons.jsx';
     <!-- Header con Logo y Botones -->
     <header class="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
       <div class="flex items-center gap-3">
-        <!-- Logo cuadrado del canal (3.png) -->
-        <img 
-          src={`${import.meta.env.BASE_URL}3.png`} 
-          alt="Canal 2 AVC" 
-          class="w-16 h-16 object-contain rounded-lg shadow-lg shadow-red-900/30 bg-black/50 p-1"
-          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"
-        />
-        <!-- Fallback por si la imagen no carga -->
-        <div class="w-16 h-16 bg-red-600 rounded-lg hidden items-center justify-center font-black text-3xl shadow-red-500/30 shadow-lg">
-          2
-        </div>
         <!-- Logo rectangular del canal (2 banner.png) -->
         <img 
           src={`${import.meta.env.BASE_URL}2 banner.png`} 

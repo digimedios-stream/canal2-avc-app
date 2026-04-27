@@ -49,12 +49,12 @@ const VideoPlayer = () => {
     if (Hls.isSupported()) {
       const hls = new Hls({
         enableWorker: true,
-        lowLatencyMode: false, // Desactivamos baja latencia para priorizar estabilidad
-        backBufferLength: 90,
-        maxBufferLength: 40,    // Aumentamos el buffer máximo a 40 segundos
-        maxMaxBufferLength: 60,
-        liveSyncDurationCount: 5, // Empezamos 5 segmentos por detrás del "vivo" real para tener margen
-        liveMaxLatencyDurationCount: 10,
+        lowLatencyMode: false,
+        backBufferLength: 30,
+        maxBufferLength: 18,    // Ajustado a 3 segmentos (18s), ya que el servidor solo ofrece 24s total
+        maxMaxBufferLength: 30,
+        liveSyncDurationCount: 3, // Empezamos 3 segmentos atrás (margen seguro dentro de los 4 disponibles)
+        liveMaxLatencyDurationCount: 5,
         manifestLoadingMaxRetry: 10,
         levelLoadingMaxRetry: 10,
       });

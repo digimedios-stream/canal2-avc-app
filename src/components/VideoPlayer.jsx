@@ -49,8 +49,14 @@ const VideoPlayer = () => {
     if (Hls.isSupported()) {
       const hls = new Hls({
         enableWorker: true,
-        lowLatencyMode: true,
-        backBufferLength: 90
+        lowLatencyMode: false, // Desactivamos baja latencia para priorizar estabilidad
+        backBufferLength: 90,
+        maxBufferLength: 40,    // Aumentamos el buffer máximo a 40 segundos
+        maxMaxBufferLength: 60,
+        liveSyncDurationCount: 5, // Empezamos 5 segmentos por detrás del "vivo" real para tener margen
+        liveMaxLatencyDurationCount: 10,
+        manifestLoadingMaxRetry: 10,
+        levelLoadingMaxRetry: 10,
       });
       hlsRef.current = hls;
       hls.loadSource(videoSrc);

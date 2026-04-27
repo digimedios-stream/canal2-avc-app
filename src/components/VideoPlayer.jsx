@@ -1,106 +1,147 @@
 // src/components/VideoPlayer.jsx
 import { useEffect, useRef } from 'react';
-import videojs from 'video.js';
-import 'video.js/dist/video-js.css';
+import Plyr from 'plyr';
+import 'plyr/dist/plyr.css';
+import Hls from 'hls.js';
 
 const VideoPlayer = () => {
   const videoRef = useRef(null);
   const playerRef = useRef(null);
+  const hlsRef = useRef(null);
   const videoSrc = "https://giatv.bozztv.com/giatv/giatv-digimediosstreamavc/digimediosstreamavc/playlist.m3u8";
 
   useEffect(() => {
-    if (!videoRef.current) return;
+    const video = videoRef.current;
+    if (!video) return;
 
-    // Detectar si es Android para usar una estrategia distinta
-    const isAndroid = /Android/i.test(navigator.userAgent);
-
-    const videoJsOptions = {
+    // Configuración de Plyr con estética premium
+    const plyrOptions = {
       autoplay: true,
-      controls: true,
-      responsive: true,
-      fluid: true,
       muted: true,
-      preload: 'auto',
-      sources: [{
-        src: videoSrc,
-        type: 'application/x-mpegURL'
-      }],
-      liveui: true,
-      html5: {
-        vhs: {
-          // Si es Android, dejamos que el sistema maneje mas la señal (Native HLS)
-          // Si es PC/iOS, usamos el motor VHS para mas control
-          overrideNative: !isAndroid,
-          fastQualityChange: true,
-        },
-        nativeAudioTracks: isAndroid,
-        nativeVideoTracks: isAndroid,
+      controls: [
+        'play-large', 
+        'play', 
+        'mute', 
+        'volume', 
+        'settings', 
+        'fullscreen'
+      ],
+      settings: ['quality', 'speed'],
+      quality: {
+        default: 720,
+        options: [1080, 720, 480, 360],
       },
-      controlBar: {
-        children: [
-          'playToggle',
-          'volumePanel',
-          'progressControl',
-          'liveDisplay',
-          'remainingTimeDisplay',
-          'fullscreenToggle',
-        ],
+      i18n: {
+        play: 'Reproducir',
+        pause: 'Pausa',
+        mute: 'Silenciar',
+        unmute: 'Activar sonido',
+        settings: 'Ajustes',
+        quality: 'Calidad',
+        fullscreen: 'Pantalla completa',
       },
     };
 
-    const player = playerRef.current = videojs(videoRef.current, videoJsOptions, () => {
-      console.log('Video.js reinstalado. Modo Android:', isAndroid);
-    });
+    const initPlayer = () => {
+      playerRef.current = new Plyr(video, plyrOptions);
+    };
 
-    // Recuperación agresiva de errores
-    player.on('error', () => {
-      console.warn('Error en la señal, intentando reconectar...');
-      setTimeout(() => {
-        player.src({ src: videoSrc, type: 'application/x-mpegURL' });
-        player.load();
-        player.play().catch(() => {});
-      }, 1500);
-    });
+    if (Hls.isSupported()) {
+      const hls = new Hls({
+        enableWorker: true,
+        lowLatencyMode: true,
+        backBufferLength: 90
+      });
+      hlsRef.current = hls;
+      hls.loadSource(videoSrc);
+      hls.attachMedia(video);
+      
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        initPlayer();
+      });
 
-    // Si la imagen se congela (stalling), forzamos recarga
-    player.on('stalled', () => {
-      console.warn('Señal estancada, refrescando buffer...');
-      player.load();
-      player.play().catch(() => {});
-    });
+      // Manejo de errores agresivo para mantener la señal viva
+      hls.on(Hls.Events.ERROR, (event, data) => {
+        if (data.fatal) {
+          switch (data.type) {
+            case Hls.ErrorTypes.NETWORK_ERROR:
+              console.warn('Error de red, reintentando...');
+              hls.startLoad();
+              break;
+            case Hls.ErrorTypes.MEDIA_ERROR:
+              console.warn('Error de media, recuperando...');
+              hls.recoverMediaError();
+              break;
+            default:
+              console.error('Error fatal, reiniciando reproductor...');
+              hls.destroy();
+              setTimeout(initPlayer, 2000);
+              break;
+          }
+        }
+      });
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      // Para Safari nativo
+      video.src = videoSrc;
+      video.addEventListener('loadedmetadata', initPlayer);
+    }
 
     return () => {
-      if (player && !player.isDisposed()) {
-        player.dispose();
-        playerRef.current = null;
+      if (playerRef.current) {
+        playerRef.current.destroy();
+      }
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
       }
     };
   }, []);
 
   return (
-    <div className="w-full relative bg-black rounded-xl overflow-hidden shadow-2xl shadow-red-900/20 border border-gray-800">
-      <div data-vjs-player>
-        <video
-          ref={videoRef}
-          className="video-js vjs-big-play-centered vjs-theme-city"
-          playsInline
-          poster={`${import.meta.env.BASE_URL}3.png`}
-        />
-      </div>
-      <div className="absolute top-4 left-4 z-10 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg pointer-events-none">
-        🔴 EN VIVO
+    <div className="video-container relative group w-full bg-black rounded-2xl overflow-hidden shadow-2xl shadow-red-900/30 border border-white/5 transition-all duration-500 hover:border-red-500/30">
+      <video
+        ref={videoRef}
+        className="plyr-react plyr"
+        playsInline
+        poster={`${import.meta.env.BASE_URL}3.png`}
+      />
+      
+      {/* Badge de EN VIVO optimizado */}
+      <div className="absolute top-4 left-4 z-10 flex items-center gap-2 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-red-500/50 pointer-events-none shadow-lg">
+        <span className="relative flex h-2 w-2">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
+        </span>
+        <span className="text-white text-[10px] font-black uppercase tracking-widest">EN VIVO</span>
       </div>
 
       <style>{`
-        .video-js { background-color: #000; font-family: 'Inter', sans-serif; }
-        .vjs-control-bar { background-color: rgba(0, 0, 0, 0.7) !important; backdrop-filter: blur(5px); }
-        .vjs-play-progress, .vjs-volume-level { background-color: #ef4444 !important; }
-        .vjs-big-play-button { 
-          background-color: rgba(239, 68, 68, 0.8) !important; 
-          border-color: #ef4444 !important;
-          border-radius: 50% !important;
-          width: 2em !important; height: 2em !important;
-          line-height: 2em !important; margin-top: -1em !important; margin-left: -1em !important;
+        /* Personalización de Plyr para matching de marca (Rojo) */
+        :root {
+          --plyr-color-main: #ef4444; /* red-500 */
+          --plyr-video-background: #000;
+          --plyr-menu-background: rgba(0, 0, 0, 0.9);
+          --plyr-menu-color: #fff;
+          --plyr-badge-border-radius: 4px;
+        }
+
+        .video-container .plyr--video {
+          border-radius: 1rem;
+        }
+
+        .plyr--full-ui.plyr--video .plyr__control--overlaid {
+          background: rgba(239, 68, 68, 0.85);
+        }
+
+        .plyr--full-ui.plyr--video .plyr__control--overlaid:hover {
+          background: #ef4444;
+        }
+
+        /* Ocultar barra de progreso si es un stream en vivo puro (opcional) */
+        /* .plyr__progress__container { display: none; } */
+        
+        .plyr__controls {
+          background: linear-gradient(transparent, rgba(0,0,0,0.8)) !important;
+          padding-top: 20px !important;
         }
       `}</style>
     </div>

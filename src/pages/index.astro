@@ -4,6 +4,7 @@ import Layout from '../layouts/Layout.astro';
 import VideoPlayer from '../components/VideoPlayer.jsx';
 import RadioPlayer from '../components/RadioPlayer.jsx';
 import SocialButtons from '../components/SocialButtons.jsx';
+import PWAInstall from '../components/PWAInstall.jsx';
 ---
 
 <Layout title="Canal 2 AVC TV + FM">
@@ -19,7 +20,10 @@ import SocialButtons from '../components/SocialButtons.jsx';
           onerror="this.style.display='none'"
         />
       </div>
-      <SocialButtons client:only="react" />
+      <div class="flex items-center gap-3">
+        <PWAInstall client:only="react" type="header" />
+        <SocialButtons client:only="react" />
+      </div>
     </header>
 
     <!-- Sección TV (Principal) -->
@@ -61,5 +65,6 @@ import SocialButtons from '../components/SocialButtons.jsx';
       <p>© {new Date().getFullYear()} Canal 2 AVC. Todos los derechos reservados.</p>
       <p class="mt-1">Desarrollado por Digimedios Apps</p>
     </footer>
+    <PWAInstall client:only="react" type="popup" />
   </main>
 </Layout>

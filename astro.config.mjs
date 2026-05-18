@@ -7,8 +7,8 @@ import react from '@astrojs/react';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://digimedios-stream.github.io',
-  base: '/canal2-avc-app/',
+  site: 'https://canal2avcmontecaseros.com.ar',
+  base: '/',
   vite: {
     plugins: [tailwindcss()]
   },

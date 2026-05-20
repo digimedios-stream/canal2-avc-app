@@ -8,6 +8,7 @@ const VideoPlayer = () => {
   const [error, setError] = useState(null);
   const [timeLeft, setTimeLeft] = useState(36);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isCastAvailable, setIsCastAvailable] = useState(false);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -94,6 +95,60 @@ const VideoPlayer = () => {
     };
   }, []);
 
+  // Inicialización de Chromecast
+  useEffect(() => {
+    // Configurar el callback global de Cast SDK
+    window.__onGCastApiAvailable = function(isAvailable) {
+      if (isAvailable) {
+        setIsCastAvailable(true);
+        const castContext = cast.framework.CastContext.getInstance();
+        castContext.setOptions({
+          receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
+          autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED
+        });
+
+        // Escuchar cambios de sesión para cargar el stream cuando se conecte
+        castContext.addEventListener(
+          cast.framework.CastContextEventType.SESSION_STATE_CHANGED,
+          (event) => {
+            if (
+              event.sessionState === cast.framework.SessionState.SESSION_STARTED ||
+              event.sessionState === cast.framework.SessionState.SESSION_RESUMED
+            ) {
+              const castSession = castContext.getCurrentSession();
+              if (castSession) {
+                const mediaInfo = new chrome.cast.media.MediaInfo(videoSrc, 'application/x-mpegURL');
+                mediaInfo.metadata = new chrome.cast.media.GenericMediaMetadata();
+                mediaInfo.metadata.metadataType = chrome.cast.media.MetadataType.GENERIC;
+                mediaInfo.metadata.title = "AVC HD en Vivo";
+                // Imagen opcional para la TV
+                const baseUrl = window.location.origin + import.meta.env.BASE_URL;
+                mediaInfo.metadata.images = [{ url: `${baseUrl}3.png` }];
+                
+                const request = new chrome.cast.media.LoadRequest(mediaInfo);
+                request.autoplay = true;
+
+                castSession.loadMedia(request).then(
+                  () => console.log('Chromecast: Carga exitosa'),
+                  (errorCode) => console.error('Chromecast error:', errorCode)
+                );
+              }
+            }
+          }
+        );
+      }
+    };
+
+    // Inyectar script de Cast SDK
+    if (!document.getElementById('cast-sdk-script')) {
+      const script = document.createElement('script');
+      script.id = 'cast-sdk-script';
+      script.src = "https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1";
+      script.async = true;
+      document.body.appendChild(script);
+    }
+  }, []);
+
   // Intervalo del temporizador en retroceso
   useEffect(() => {
     if (isLoaded) return;
@@ -143,6 +198,21 @@ const VideoPlayer = () => {
         </span>
         <span className="text-white text-[10px] font-black uppercase tracking-widest">EN VIVO</span>
       </div>
+
+      {/* Botón de Chromecast */}
+      {isCastAvailable && (
+        <div className="absolute top-4 right-4 z-20 bg-black/50 backdrop-blur-md rounded-full p-1.5 shadow-lg border border-white/10 hover:border-red-500/50 transition-colors">
+          <google-cast-launcher 
+            style={{ 
+              '--connected-color': '#EF4444', 
+              '--disconnected-color': '#ffffff', 
+              width: '28px', 
+              height: '28px',
+              cursor: 'pointer'
+            }}
+          ></google-cast-launcher>
+        </div>
+      )}
 
       {error && (
         <div className="absolute bottom-4 left-4 right-4 bg-black/80 backdrop-blur-md border border-red-500/30 text-red-400 px-4 py-2 rounded-xl text-sm z-20">

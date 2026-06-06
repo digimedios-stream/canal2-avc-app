@@ -177,6 +177,12 @@ const VideoPlayer = () => {
         .animate-shimmer {
           animation: custom-shimmer 2.5s infinite linear;
         }
+        google-cast-launcher {
+          width: 28px !important;
+          height: 28px !important;
+          cursor: pointer;
+          display: block;
+        }
       `}</style>
 
       <video
@@ -191,7 +197,7 @@ const VideoPlayer = () => {
       />
       
       {/* Badge de EN VIVO optimizado con diseño premium */}
-      <div className="absolute top-4 left-4 z-10 flex items-center gap-2 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-red-500/50 pointer-events-none shadow-lg">
+      <div className="absolute top-4 left-4 z-20 flex items-center gap-2 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-red-500/50 pointer-events-none shadow-lg">
         <span className="relative flex h-2 w-2">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
           <span className="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
@@ -201,14 +207,11 @@ const VideoPlayer = () => {
 
       {/* Botón de Chromecast */}
       {isCastAvailable && (
-        <div className="absolute top-4 right-4 z-20 bg-black/50 backdrop-blur-md rounded-full p-1.5 shadow-lg border border-white/10 hover:border-red-500/50 transition-colors">
+        <div className="absolute top-4 right-4 z-30 bg-black/60 backdrop-blur-md rounded-full p-2 flex items-center justify-center shadow-xl border border-white/10 hover:border-red-500/50 transition-all hover:scale-105">
           <google-cast-launcher 
             style={{ 
               '--connected-color': '#EF4444', 
-              '--disconnected-color': '#ffffff', 
-              width: '28px', 
-              height: '28px',
-              cursor: 'pointer'
+              '--disconnected-color': '#ffffff'
             }}
           ></google-cast-launcher>
         </div>

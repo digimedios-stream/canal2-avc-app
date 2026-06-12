@@ -98,7 +98,7 @@ const VideoPlayer = () => {
   // Inicialización de Chromecast
   useEffect(() => {
     // Configurar el callback global de Cast SDK
-    window.__onGCastApiAvailable = function(isAvailable) {
+    window.__onGCastApiAvailable = function (isAvailable) {
       if (isAvailable) {
         setIsCastAvailable(true);
         const castContext = cast.framework.CastContext.getInstance();
@@ -124,7 +124,7 @@ const VideoPlayer = () => {
                 // Imagen opcional para la TV
                 const baseUrl = window.location.origin + import.meta.env.BASE_URL;
                 mediaInfo.metadata.images = [{ url: `${baseUrl}3.png` }];
-                
+
                 const request = new chrome.cast.media.LoadRequest(mediaInfo);
                 request.autoplay = true;
 
@@ -195,7 +195,7 @@ const VideoPlayer = () => {
         preload="auto"
         poster={`${import.meta.env.BASE_URL}3.png`}
       />
-      
+
       {/* Badge de EN VIVO optimizado con diseño premium */}
       <div className="absolute top-4 left-4 z-20 flex items-center gap-2 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-red-500/50 pointer-events-none shadow-lg">
         <span className="relative flex h-2 w-2">
@@ -208,9 +208,9 @@ const VideoPlayer = () => {
       {/* Botón de Chromecast */}
       {isCastAvailable && (
         <div className="absolute top-4 right-4 z-30 bg-black/60 backdrop-blur-md rounded-full p-2 flex items-center justify-center shadow-xl border border-white/10 hover:border-red-500/50 transition-all hover:scale-105">
-          <google-cast-launcher 
-            style={{ 
-              '--connected-color': '#EF4444', 
+          <google-cast-launcher
+            style={{
+              '--connected-color': '#EF4444',
               '--disconnected-color': '#ffffff'
             }}
           ></google-cast-launcher>
@@ -243,10 +243,10 @@ const VideoPlayer = () => {
               </span>
             </div>
           </div>
-          
+
           {/* Barra de progreso premium (retroceso de 100% a 0%) */}
           <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden relative shadow-inner border border-white/5">
-            <div 
+            <div
               className="h-full bg-gradient-to-r from-red-600 via-red-500 to-amber-500 rounded-full transition-all duration-1000 ease-linear shadow-lg shadow-red-500/40 relative overflow-hidden"
               style={{ width: `${(timeLeft / 36) * 100}%` }}
             >

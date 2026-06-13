@@ -3,7 +3,10 @@ import { useEffect, useRef, useState } from 'react';
 
 const VideoPlayer = () => {
   const videoRef = useRef(null);
-  const videoSrc = "https://giatv.bozztv.com/giatv/giatv-digimediosstreamavc/digimediosstreamavc/playlist.m3u8";
+  const videoSrcHD = "https://giatv.bozztv.com/giatv/giatv-digimediosstreamavc/digimediosstreamavc/playlist.m3u8";
+  // Reemplaza esta URL con el enlace .m3u8 de 480p cuando lo tengas
+  const videoSrcMobile = "https://usb.bozztv.com/avchomero3/index.m3u8"; 
+
   const [isNative, setIsNative] = useState(false);
   const [error, setError] = useState(null);
   const [timeLeft, setTimeLeft] = useState(36);
@@ -18,12 +21,14 @@ const VideoPlayer = () => {
     const isMobileOrTablet = /Android|iPhone|iPad|iPod|webOS/i.test(navigator.userAgent)
       || (navigator.maxTouchPoints && navigator.maxTouchPoints > 2);
 
+    const activeVideoSrc = isMobileOrTablet ? videoSrcMobile : videoSrcHD;
+
     // 2. Intentar con el reproductor nativo PRIMERO
     const tryNativePlayback = () => {
       // Verificamos si el navegador soporta HLS de forma nativa (Safari, iOS, Android moderno)
       if (video.canPlayType('application/vnd.apple.mpegurl')) {
         setIsNative(true);
-        video.src = videoSrc;
+        video.src = activeVideoSrc;
         video.play().catch(e => console.warn("Reproducción automática bloqueada:", e));
       } else {
         // Si no soporta nativo, recurrimos a hls.js
@@ -46,7 +51,7 @@ const VideoPlayer = () => {
             maxMaxBufferLength: 30,
             liveSyncDurationCount: 3,
           });
-          hls.loadSource(videoSrc);
+          hls.loadSource(activeVideoSrc);
           hls.attachMedia(video);
           hls.on(Hls.Events.MANIFEST_PARSED, () => {
             video.play().catch(e => console.warn("Reproducción automática bloqueada:", e));
@@ -117,7 +122,8 @@ const VideoPlayer = () => {
             ) {
               const castSession = castContext.getCurrentSession();
               if (castSession) {
-                const mediaInfo = new chrome.cast.media.MediaInfo(videoSrc, 'application/x-mpegURL');
+                // Siempre enviamos la calidad HD (videoSrcHD) al Chromecast
+                const mediaInfo = new chrome.cast.media.MediaInfo(videoSrcHD, 'application/x-mpegURL');
                 mediaInfo.metadata = new chrome.cast.media.GenericMediaMetadata();
                 mediaInfo.metadata.metadataType = chrome.cast.media.MetadataType.GENERIC;
                 mediaInfo.metadata.title = "AVC HD en Vivo";

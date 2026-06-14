@@ -32,6 +32,8 @@ const VideoPlayer = () => {
       hlsRef.current = null;
     }
 
+    setError(null); // Limpiar errores al intentar cargar de nuevo
+
     // 2. Intentar con el reproductor nativo PRIMERO
     const tryNativePlayback = () => {
       // Verificamos si el navegador soporta HLS de forma nativa (Safari, iOS, Android moderno)
@@ -73,8 +75,23 @@ const VideoPlayer = () => {
                 setUseFallback(true);
                 return;
               }
-              console.error("Error fatal con hls.js", data);
-              setError("Error al cargar el stream de video.");
+              
+              // Intentar recuperar errores internos de Hls.js
+              switch (data.type) {
+                case Hls.ErrorTypes.NETWORK_ERROR:
+                  console.warn('Error de red, intentando reconectar silenciosamente...');
+                  hls.startLoad();
+                  break;
+                case Hls.ErrorTypes.MEDIA_ERROR:
+                  console.warn('Error de medios, intentando recuperar stream...');
+                  hls.recoverMediaError();
+                  break;
+                default:
+                  console.error("Error fatal irrecuperable con hls.js", data);
+                  setError("Error al cargar el stream de video.");
+                  hls.destroy();
+                  break;
+              }
             }
           });
         } else {

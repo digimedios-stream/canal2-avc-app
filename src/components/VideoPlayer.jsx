@@ -12,6 +12,8 @@ const VideoPlayer = () => {
   const [timeLeft, setTimeLeft] = useState(36);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isCastAvailable, setIsCastAvailable] = useState(false);
+  const [useFallback, setUseFallback] = useState(false); // Nuevo estado para fallback automático
+  const hlsRef = useRef(null);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -21,7 +23,14 @@ const VideoPlayer = () => {
     const isMobileOrTablet = /Android|iPhone|iPad|iPod|webOS/i.test(navigator.userAgent)
       || (navigator.maxTouchPoints && navigator.maxTouchPoints > 2);
 
-    const activeVideoSrc = isMobileOrTablet ? videoSrcMobile : videoSrcHD;
+    // Si es móvil o si se activó el fallback por fallas, usamos la URL de SD
+    const activeVideoSrc = (isMobileOrTablet || useFallback) ? videoSrcMobile : videoSrcHD;
+
+    // Limpiar instancia anterior si existe (importante al cambiar de calidad)
+    if (hlsRef.current) {
+      hlsRef.current.destroy();
+      hlsRef.current = null;
+    }
 
     // 2. Intentar con el reproductor nativo PRIMERO
     const tryNativePlayback = () => {
@@ -51,6 +60,7 @@ const VideoPlayer = () => {
             maxMaxBufferLength: 30,
             liveSyncDurationCount: 3,
           });
+          hlsRef.current = hls; // Guardamos la referencia
           hls.loadSource(activeVideoSrc);
           hls.attachMedia(video);
           hls.on(Hls.Events.MANIFEST_PARSED, () => {
@@ -58,6 +68,11 @@ const VideoPlayer = () => {
           });
           hls.on(Hls.Events.ERROR, (event, data) => {
             if (data.fatal) {
+              if (data.type === Hls.ErrorTypes.NETWORK_ERROR && !useFallback && !isMobileOrTablet) {
+                console.warn("Red inestable (Fatal), cambiando a calidad SD automáticamente...");
+                setUseFallback(true);
+                return;
+              }
               console.error("Error fatal con hls.js", data);
               setError("Error al cargar el stream de video.");
             }
@@ -82,7 +97,24 @@ const VideoPlayer = () => {
 
     // Detectar cuando el video realmente empieza a reproducirse para ocultar el contador
     const handlePlay = () => setIsLoaded(true);
-    const handlePlaying = () => setIsLoaded(true);
+
+    let waitingTimeout;
+    const handlePlaying = () => {
+      setIsLoaded(true);
+      clearTimeout(waitingTimeout); // Si vuelve a reproducir, cancelamos el timer
+    };
+
+    const handleWaiting = () => {
+      // Si estamos en HD y se queda cargando (buffering)...
+      if (!isMobileOrTablet && !useFallback) {
+        // Le damos 8 segundos para recuperarse, si no, lo bajamos a SD
+        waitingTimeout = setTimeout(() => {
+          console.warn("Demasiado tiempo cargando, cambiando a SD automáticamente...");
+          setUseFallback(true);
+        }, 8000); 
+      }
+    };
+
     const handleTimeUpdate = () => {
       if (video.currentTime > 0) {
         setIsLoaded(true);
@@ -91,14 +123,20 @@ const VideoPlayer = () => {
 
     video.addEventListener('play', handlePlay);
     video.addEventListener('playing', handlePlaying);
+    video.addEventListener('waiting', handleWaiting);
     video.addEventListener('timeupdate', handleTimeUpdate);
 
     return () => {
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+      }
+      clearTimeout(waitingTimeout);
       video.removeEventListener('play', handlePlay);
       video.removeEventListener('playing', handlePlaying);
+      video.removeEventListener('waiting', handleWaiting);
       video.removeEventListener('timeupdate', handleTimeUpdate);
     };
-  }, []);
+  }, [useFallback]); // Se vuelve a ejecutar si cambia el estado de fallback
 
   // Inicialización de Chromecast
   useEffect(() => {
@@ -220,6 +258,13 @@ const VideoPlayer = () => {
               '--disconnected-color': '#ffffff'
             }}
           ></google-cast-launcher>
+        </div>
+      )}
+
+      {/* Indicador de Auto-Fallback (se muestra unos segundos si se bajó la calidad) */}
+      {useFallback && (
+        <div className="absolute top-4 right-16 z-20 flex items-center gap-2 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-amber-500/50 pointer-events-none shadow-lg animate-pulse">
+          <span className="text-amber-400 text-[10px] font-bold tracking-wider">AUTO: CALIDAD SD</span>
         </div>
       )}
 

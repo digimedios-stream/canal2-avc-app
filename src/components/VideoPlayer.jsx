@@ -5,7 +5,7 @@ const VideoPlayer = () => {
   const videoRef = useRef(null);
   const videoSrcHD = "https://giatv.bozztv.com/giatv/giatv-digimediosstreamavc/digimediosstreamavc/playlist.m3u8";
   // Reemplaza esta URL con el enlace .m3u8 de 480p cuando lo tengas
-  const videoSrcMobile = "https://lbgo.bozztv.com/ssh101/ssh101/avchomero3/playlist.m3u8"; 
+  const videoSrcMobile = "https://lbgo.bozztv.com/ssh101/ssh101/avchomero3/playlist.m3u8";
 
   const [isNative, setIsNative] = useState(false);
   const [error, setError] = useState(null);
@@ -104,7 +104,7 @@ const VideoPlayer = () => {
   useEffect(() => {
     // Configurar el callback global de Cast SDK
     window.__onGCastApiAvailable = function (isAvailable) {
-      if (isAvailable) {
+      if (isAvailable && window.chrome && window.chrome.cast && window.chrome.cast.media) {
         setIsCastAvailable(true);
         const castContext = cast.framework.CastContext.getInstance();
         castContext.setOptions({
